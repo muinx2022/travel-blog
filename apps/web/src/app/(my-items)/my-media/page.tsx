@@ -19,7 +19,7 @@ type FilterState = {
 };
 
 export default function MyMediaPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [medias, setMedias] = useState<EntityMediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,10 +73,10 @@ export default function MyMediaPage() {
   }, [user, filters]);
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (user) {
       void load();
     }
-  }, [authLoading, user, load]);
+  }, [user, load]);
 
   const handleDelete = async (documentId: string) => {
     if (!confirm("Bạn có chắc muốn xóa media này?")) return;
@@ -135,14 +135,6 @@ export default function MyMediaPage() {
 
   const entityTypes = [...new Set(medias.map((m) => m.entityType))];
   const mediaCategories: MediaCategory[] = ["thumbnail", "gallery", "video"];
-
-  if (authLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-      </div>
-    );
-  }
 
   if (!user) {
     return (
