@@ -21,7 +21,7 @@ import { bulkUpdateEntityDocumentId } from "@/lib/entity-media-api";
 export type FormField = {
   name: string;
   label: string;
-  type: "text" | "slug" | "textarea" | "richtext" | "author" | "categories" | "tags" | "media" | "custom";
+  type: string;
   required?: boolean;
   render?: (form: any, setForm: any) => React.ReactNode;
 };
