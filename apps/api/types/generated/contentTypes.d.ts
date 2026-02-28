@@ -446,6 +446,11 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.RichText;
+    homestays: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::homestay.homestay'
+    >;
+    hotels: Schema.Attribute.Relation<'manyToMany', 'api::hotel.hotel'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -456,8 +461,21 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     parent: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
     posts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
     publishedAt: Schema.Attribute.DateTime;
+    restaurants: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::restaurant.restaurant'
+    >;
     slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    souvenirShops: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::souvenir-shop.souvenir-shop'
+    >;
+    tours: Schema.Attribute.Relation<'manyToMany', 'api::tour.tour'>;
+    travelGuides: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::travel-guide.travel-guide'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -492,13 +510,313 @@ export interface ApiCommentComment extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     targetDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
     targetType: Schema.Attribute.Enumeration<
-      ['post', 'page', 'product', 'hotel', 'tour', 'other']
+      [
+        'post',
+        'page',
+        'product',
+        'hotel',
+        'tour',
+        'restaurant',
+        'homestay',
+        'souvenir-shop',
+        'shop',
+        'other',
+      ]
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'post'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiContactEmailTemplateContactEmailTemplate
+  extends Struct.SingleTypeSchema {
+  collectionName: 'contact_email_templates';
+  info: {
+    displayName: 'Contact Email Template';
+    pluralName: 'contact-email-templates';
+    singularName: 'contact-email-template';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    adminBody: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Nguoi gui: {requesterName} ({requesterEmail})\\nMuc tieu: \\"{targetTitle}\\" ({targetType})\\nOwner: {ownerName} ({ownerEmail})\\nNoi dung:\\n{message}\\n\\nTrang chi tiet: {targetLink}'>;
+    adminSubject: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'[Travel Blog] Co lien he moi tu nguoi dung'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contact-email-template.contact-email-template'
+    > &
+      Schema.Attribute.Private;
+    ownerBody: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Xin chao {ownerName},\\n\\n{requesterName} da lien he ve \\"{targetTitle}\\" ({targetType}).\\nNoi dung:\\n{message}\\n\\nTrang chi tiet: {targetLink}'>;
+    ownerSubject: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'[Travel Blog] Ban nhan duoc lien he moi'>;
+    publishedAt: Schema.Attribute.DateTime;
+    requesterBody: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Chao {requesterName},\\n\\nBan da gui lien he den \\"{targetTitle}\\" ({targetType}).\\nNoi dung cua ban:\\n{message}\\n\\nChung toi da thong bao den chu so huu noi dung va admin.'>;
+    requesterSubject: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'[Travel Blog] Da gui lien he thanh cong'>;
+    serviceOverrides: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<{}>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiContactRequestContactRequest
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'contact_requests';
+  info: {
+    displayName: 'Contact Request';
+    pluralName: 'contact-requests';
+    singularName: 'contact-request';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::contact-request.contact-request'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    ownerUser: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    requesterEmail: Schema.Attribute.Email;
+    requesterName: Schema.Attribute.String & Schema.Attribute.Required;
+    requesterUser: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    status: Schema.Attribute.Enumeration<['pending', 'sent', 'failed']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    targetDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
+    targetTitle: Schema.Attribute.String;
+    targetType: Schema.Attribute.Enumeration<
+      [
+        'hotel',
+        'tour',
+        'shop',
+        'souvenir-shop',
+        'restaurant',
+        'homestay',
+        'other',
+      ]
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiContentPageContentPage extends Struct.CollectionTypeSchema {
+  collectionName: 'content_pages';
+  info: {
+    displayName: 'Content Page';
+    pluralName: 'content-pages';
+    singularName: 'content-page';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::content-page.content-page'
+    > &
+      Schema.Attribute.Private;
+    navigationLabel: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    showInFooter: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    showInHeader: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    summary: Schema.Attribute.Text;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiEntityMediaEntityMedia extends Struct.CollectionTypeSchema {
+  collectionName: 'entity_medias';
+  info: {
+    description: 'Polymorphic media storage for all entities (hotels, posts, tours, etc.)';
+    displayName: 'Entity Media';
+    pluralName: 'entity-medias';
+    singularName: 'entity-media';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    altText: Schema.Attribute.String;
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    caption: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    entityDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
+    entityType: Schema.Attribute.String & Schema.Attribute.Required;
+    file: Schema.Attribute.Media<'images' | 'videos'> &
+      Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::entity-media.entity-media'
+    > &
+      Schema.Attribute.Private;
+    mediaCategory: Schema.Attribute.Enumeration<
+      ['thumbnail', 'gallery', 'video']
+    > &
+      Schema.Attribute.DefaultTo<'gallery'>;
+    publishedAt: Schema.Attribute.DateTime;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiHomestayHomestay extends Struct.CollectionTypeSchema {
+  collectionName: 'homestays';
+  info: {
+    displayName: 'Homestay';
+    pluralName: 'homestays';
+    singularName: 'homestay';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    address: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    amenities: Schema.Attribute.Component<'hotel.amenity', true>;
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    categories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::category.category'
+    >;
+    city: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excerpt: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    images: Schema.Attribute.Media<'images', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::homestay.homestay'
+    > &
+      Schema.Attribute.Private;
+    priceRange: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 1;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiHotelHotel extends Struct.CollectionTypeSchema {
+  collectionName: 'hotels';
+  info: {
+    displayName: 'Hotel';
+    pluralName: 'hotels';
+    singularName: 'hotel';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    address: Schema.Attribute.String;
+    amenities: Schema.Attribute.Component<'hotel.amenity', true>;
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    categories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::category.category'
+    >;
+    city: Schema.Attribute.String;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excerpt: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<'images' | 'videos', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::hotel.hotel'> &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    roomTypes: Schema.Attribute.Component<'hotel.room-type', true>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    starRating: Schema.Attribute.Integer;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    videoUrl: Schema.Attribute.String;
   };
 }
 
@@ -513,7 +831,9 @@ export interface ApiInteractionInteraction extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    actionType: Schema.Attribute.Enumeration<['like', 'follow', 'share']> &
+    actionType: Schema.Attribute.Enumeration<
+      ['like', 'follow', 'share', 'report']
+    > &
       Schema.Attribute.Required;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -527,7 +847,18 @@ export interface ApiInteractionInteraction extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     targetDocumentId: Schema.Attribute.String & Schema.Attribute.Required;
     targetType: Schema.Attribute.Enumeration<
-      ['post', 'comment', 'user', 'hotel', 'tour', 'other']
+      [
+        'post',
+        'comment',
+        'user',
+        'hotel',
+        'tour',
+        'shop',
+        'souvenir-shop',
+        'restaurant',
+        'homestay',
+        'other',
+      ]
     > &
       Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -537,6 +868,50 @@ export interface ApiInteractionInteraction extends Struct.CollectionTypeSchema {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiNotificationNotification
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'notifications';
+  info: {
+    displayName: 'Notification';
+    pluralName: 'notifications';
+    singularName: 'notification';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isRead: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::notification.notification'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    meta: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    recipientEmail: Schema.Attribute.Email;
+    recipientUser: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    targetDocumentId: Schema.Attribute.String;
+    targetType: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      ['contact_owner', 'contact_admin', 'contact_requester', 'report', 'other']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'other'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -569,7 +944,326 @@ export interface ApiPostPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRestaurantRestaurant extends Struct.CollectionTypeSchema {
+  collectionName: 'restaurants';
+  info: {
+    displayName: 'Restaurant';
+    pluralName: 'restaurants';
+    singularName: 'restaurant';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    address: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    categories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::category.category'
+    >;
+    city: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cuisineType: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    excerpt: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    images: Schema.Attribute.Media<'images', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::restaurant.restaurant'
+    > &
+      Schema.Attribute.Private;
+    priceRange: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 1;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSiteHomepageSiteHomepage extends Struct.SingleTypeSchema {
+  collectionName: 'site_homepages';
+  info: {
+    displayName: 'Site Homepage';
+    pluralName: 'site-homepages';
+    singularName: 'site-homepage';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    destinationsSectionTitle: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Kh\u00E1m ph\u00E1 \u0111i\u1EC3m \u0111\u1EBFn'>;
+    featuredLabel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'M\u1EDBi nh\u1EA5t'>;
+    featuredPostsCount: Schema.Attribute.Integer &
+      Schema.Attribute.DefaultTo<3>;
+    feedPostsCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<5>;
+    heroPrimaryCtaLabel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Xem \u0111i\u1EC3m \u0111\u1EBFn'>;
+    heroPrimaryCtaLink: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'#top-destinations'>;
+    heroSecondaryCtaLabel: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'\u0110\u1ECDc b\u00E0i vi\u1EBFt'>;
+    heroSecondaryCtaLink: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'#insights'>;
+    heroSubtitle: Schema.Attribute.Text &
+      Schema.Attribute.DefaultTo<'Blog chia s\u1EBB \u0111\u1ECBa danh, kinh nghi\u1EC7m v\u00E0 c\u1EA9m nang du l\u1ECBch Vi\u1EC7t Nam.'>;
+    heroTitle: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Kh\u00E1m ph\u00E1 \u0111\u1ECBa danh qua b\u00E0i vi\u1EBFt chi ti\u1EBFt v\u00E0 d\u1EC5 \u00E1p d\u1EE5ng.'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::site-homepage.site-homepage'
+    > &
+      Schema.Attribute.Private;
+    postsSectionTitle: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'B\u00E0i vi\u1EBFt m\u1EDBi nh\u1EA5t'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSouvenirShopSouvenirShop
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'souvenir_shops';
+  info: {
+    displayName: 'Souvenir Shop';
+    pluralName: 'souvenir-shops';
+    singularName: 'souvenir-shop';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    address: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    categories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::category.category'
+    >;
+    city: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excerpt: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    images: Schema.Attribute.Media<'images', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::souvenir-shop.souvenir-shop'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    shopType: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 1;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTagTag extends Struct.CollectionTypeSchema {
+  collectionName: 'tags';
+  info: {
+    displayName: 'Tag';
+    pluralName: 'tags';
+    singularName: 'tag';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::tag.tag'> &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 1;
+      }>;
+    posts: Schema.Attribute.Relation<'manyToMany', 'api::post.post'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    tours: Schema.Attribute.Relation<'manyToMany', 'api::tour.tour'>;
+    travelGuides: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::travel-guide.travel-guide'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTourTour extends Struct.CollectionTypeSchema {
+  collectionName: 'tours';
+  info: {
+    displayName: 'Tour';
+    pluralName: 'tours';
+    singularName: 'tour';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    categories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::category.category'
+    >;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    destination: Schema.Attribute.String;
+    duration: Schema.Attribute.Integer;
+    excerpt: Schema.Attribute.Text;
+    itinerary: Schema.Attribute.Component<'tour.itinerary-day', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::tour.tour'> &
+      Schema.Attribute.Private;
+    price: Schema.Attribute.Decimal;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiTravelGuideTravelGuide extends Struct.CollectionTypeSchema {
+  collectionName: 'travel_guides';
+  info: {
+    displayName: 'Travel Guide';
+    pluralName: 'travel-guides';
+    singularName: 'travel-guide';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    author: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    categories: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::category.category'
+    >;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excerpt: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    guideType: Schema.Attribute.Enumeration<
+      ['cam-nang', 'meo-du-lich', 'lich-trinh-goi-y']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'cam-nang'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::travel-guide.travel-guide'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::tag.tag'>;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+        minLength: 1;
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1036,6 +1730,7 @@ export interface PluginUsersPermissionsUser
   };
   attributes: {
     avatar: Schema.Attribute.Media<'images'>;
+    banReason: Schema.Attribute.Text;
     bio: Schema.Attribute.Text;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1048,6 +1743,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    isBanned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1091,8 +1787,21 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
       'api::comment.comment': ApiCommentComment;
+      'api::contact-email-template.contact-email-template': ApiContactEmailTemplateContactEmailTemplate;
+      'api::contact-request.contact-request': ApiContactRequestContactRequest;
+      'api::content-page.content-page': ApiContentPageContentPage;
+      'api::entity-media.entity-media': ApiEntityMediaEntityMedia;
+      'api::homestay.homestay': ApiHomestayHomestay;
+      'api::hotel.hotel': ApiHotelHotel;
       'api::interaction.interaction': ApiInteractionInteraction;
+      'api::notification.notification': ApiNotificationNotification;
       'api::post.post': ApiPostPost;
+      'api::restaurant.restaurant': ApiRestaurantRestaurant;
+      'api::site-homepage.site-homepage': ApiSiteHomepageSiteHomepage;
+      'api::souvenir-shop.souvenir-shop': ApiSouvenirShopSouvenirShop;
+      'api::tag.tag': ApiTagTag;
+      'api::tour.tour': ApiTourTour;
+      'api::travel-guide.travel-guide': ApiTravelGuideTravelGuide;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

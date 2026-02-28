@@ -23,7 +23,7 @@
     },
     "targetType": {
       "type": "enumeration",
-      "enum": ["post", "page", "product", "hotel", "tour", "other"],
+      "enum": ["post", "page", "product", "hotel", "tour", "restaurant", "homestay", "souvenir-shop", "shop", "other"],
       "default": "post",
       "required": true
     },

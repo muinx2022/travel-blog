@@ -12,12 +12,12 @@
   "attributes": {
     "actionType": {
       "type": "enumeration",
-      "enum": ["like", "follow", "share"],
+      "enum": ["like", "follow", "share", "report"],
       "required": true
     },
     "targetType": {
       "type": "enumeration",
-      "enum": ["post", "comment", "user", "hotel", "tour", "other"],
+      "enum": ["post", "comment", "user", "hotel", "tour", "shop", "souvenir-shop", "restaurant", "homestay", "other"],
       "required": true
     },
     "targetDocumentId": {

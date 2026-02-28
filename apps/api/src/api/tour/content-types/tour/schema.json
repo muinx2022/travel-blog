@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tours",
+  "info": {
+    "singularName": "tour",
+    "pluralName": "tours",
+    "displayName": "Tour"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "excerpt": {
+      "type": "text"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "duration": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "inversedBy": "tours"
+    },
+    "tags": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tag.tag",
+      "inversedBy": "tours"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "itinerary": {
+      "type": "component",
+      "repeatable": true,
+      "component": "tour.itinerary-day"
+    }
+  }
+}

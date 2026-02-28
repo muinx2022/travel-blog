@@ -1,0 +1,49 @@
+﻿{
+  "kind": "collectionType",
+  "collectionName": "notifications",
+  "info": {
+    "singularName": "notification",
+    "pluralName": "notifications",
+    "displayName": "Notification"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": ["contact_owner", "contact_admin", "contact_requester", "report", "other"],
+      "required": true,
+      "default": "other"
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "targetType": {
+      "type": "string"
+    },
+    "targetDocumentId": {
+      "type": "string"
+    },
+    "recipientUser": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "recipientEmail": {
+      "type": "email"
+    },
+    "isRead": {
+      "type": "boolean",
+      "default": false
+    },
+    "meta": {
+      "type": "json"
+    }
+  }
+}

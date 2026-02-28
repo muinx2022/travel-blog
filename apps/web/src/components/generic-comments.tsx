@@ -66,24 +66,24 @@ function ReplyForm({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-3 bg-white dark:bg-zinc-950">
+    <div className="rounded-md border border-zinc-200 p-3 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <p className="text-xs text-zinc-400 mb-2">Trả lời {authorName}</p>
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-md p-2 mb-3 bg-zinc-50 dark:bg-zinc-900 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all">
+      <div className="border border-zinc-200 dark:border-zinc-800 rounded-md p-2 mb-3 bg-zinc-50 dark:bg-zinc-900 focus-within:border-orange-400 transition-all">
         <TiptapEditor value={html} onChange={setHtml} showToolbar={showToolbar} />
       </div>
       {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
       <div className="flex justify-between items-center">
-        <button onClick={() => setShowToolbar((v) => !v)} className="text-xs font-medium text-blue-600 hover:underline">
+        <button onClick={() => setShowToolbar((v) => !v)} className="text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
           {showToolbar ? "Ẩn định dạng" : "Hiển thị định dạng"}
         </button>
         <div className="flex gap-2">
-          <button onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md">
+          <button onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">
             Hủy
           </button>
           <button
             onClick={handleSubmit}
             disabled={submitting || !html.trim() || html === "<p></p>"}
-            className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-semibold bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           >
             {submitting && (
               <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -126,24 +126,26 @@ function CommentCard({
 
   return (
     <div>
-      <div className={`rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm bg-white dark:bg-zinc-950${depth > 0 ? " border-l-2 border-l-blue-200 dark:border-l-blue-800" : ""}`}>
+      <div className={`rounded-none p-2 bg-transparent${depth > 0 ? " border-l border-zinc-300 dark:border-zinc-700 pl-3" : ""}`}>
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs uppercase">
+            <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 font-bold text-xs uppercase">
               {comment.authorName?.[0] ?? "?"}
             </div>
-            <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{comment.authorName}</p>
+            <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{comment.authorName}</p>
           </div>
-          <span className="text-xs text-zinc-400">{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+          <span className="text-[11px] text-zinc-400">{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
         </div>
-        <RichTextContent html={comment.content} className="richtext-content text-zinc-600 dark:text-zinc-400 mt-2" />
+        <RichTextContent html={comment.content} className="richtext-content text-sm text-zinc-700 dark:text-zinc-300 mt-2" />
 
-        <div className="flex gap-3 mt-3">
+        <div className="flex gap-2 mt-3">
           <button
             onClick={() => onLike(comment.documentId)}
             disabled={liking}
-            className={`flex items-center gap-1 text-xs font-medium transition-colors ${
-              liked ? "text-red-500 dark:text-red-400" : "text-zinc-400 hover:text-red-500 dark:hover:text-red-400"
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
+              liked
+                ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
+                : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             }`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
@@ -154,7 +156,7 @@ function CommentCard({
               if (!isLoggedIn) { openLoginModal(); return; }
               onReplyToggle(comment.documentId);
             }}
-            className="text-xs font-medium text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="rounded-full px-2.5 py-1 text-xs font-semibold text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 transition-colors"
           >
             {replies.length > 0 ? `Trả lời (${replies.length})` : "Trả lời"}
           </button>
@@ -162,7 +164,7 @@ function CommentCard({
       </div>
 
       {replies.length > 0 && (
-        <div className="ml-6 mt-2 space-y-2 pl-4 border-l-2 border-zinc-100 dark:border-zinc-800">
+        <div className="ml-4 mt-2 space-y-2 pl-4 border-l border-zinc-300 dark:border-zinc-700">
           {replies.map((reply) => (
             <CommentCard
               key={reply.documentId}
@@ -184,7 +186,7 @@ function CommentCard({
       )}
 
       {replyingTo === comment.documentId && (
-        <div className="ml-6 mt-2 pl-4 border-l-2 border-zinc-100 dark:border-zinc-800">
+        <div className="ml-4 mt-2 pl-4 border-l border-zinc-300 dark:border-zinc-700">
           <ReplyForm
             parentDocumentId={replyParentId}
             authorName={comment.authorName}
@@ -209,6 +211,7 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
   const isAuthed = isHydrated && isLoggedIn;
   const authUser = isHydrated ? user : null;
   const authJwt = isHydrated ? jwt : null;
+  const isReadOnly = Boolean(authUser?.isBanned);
 
   // Main comment box
   const [isJoined, setIsJoined] = useState(false);
@@ -275,11 +278,19 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
   }
 
   const handleJoinClick = () => {
+    if (isReadOnly) {
+      setErrorMsg("Tai khoan cua ban dang bi cam hoat dong, chi co the xem noi dung.");
+      return;
+    }
     if (!isAuthed) { openLoginModal(); return; }
     setIsJoined(true);
   };
 
   const handlePostComment = async () => {
+    if (isReadOnly) {
+      setErrorMsg("Tai khoan cua ban dang bi cam hoat dong, chi co the xem noi dung.");
+      return;
+    }
     if (!authUser || !authJwt) { openLoginModal(); return; }
     const content = commentHtml.trim();
     if (!content || content === "<p></p>") return;
@@ -307,6 +318,10 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
   };
 
   const handleLikeComment = async (commentDocumentId: string) => {
+    if (isReadOnly) {
+      setErrorMsg("Tai khoan cua ban dang bi cam hoat dong, chi co the xem noi dung.");
+      return;
+    }
     if (!isAuthed || !authJwt) { openLoginModal(); return; }
     // Optimistic toggle
     const prev = commentLikes[commentDocumentId] ?? false;
@@ -334,6 +349,10 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
   };
 
   const handleReplyToggle = (parentDocumentId: string) => {
+    if (isReadOnly) {
+      setErrorMsg("Tai khoan cua ban dang bi cam hoat dong, chi co the xem noi dung.");
+      return;
+    }
     setReplyingTo((prev) => prev === parentDocumentId ? null : parentDocumentId);
   };
 
@@ -342,6 +361,9 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
   };
 
   const handleReplySubmit = async (parentDocumentId: string, html: string): Promise<{ ok: boolean; errorMsg?: string }> => {
+    if (isReadOnly) {
+      return { ok: false, errorMsg: "Tai khoan cua ban dang bi cam hoat dong." };
+    }
     if (!authUser || !authJwt) { openLoginModal(); return { ok: false, errorMsg: "Vui lòng đăng nhập." }; }
 
     const { ok, data, errorMsg: err } = await postComment(authJwt, {
@@ -369,17 +391,22 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {successMsg && (
-        <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md px-4 py-3">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
           {successMsg}
         </div>
       )}
       {errorMsg && (
-        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md px-4 py-3">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
           {errorMsg}
+        </div>
+      )}
+      {isReadOnly && (
+        <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md px-4 py-3">
+          Tài khoản của bạn đang ở chế độ chỉ xem và không thể bình luận.
         </div>
       )}
 
@@ -387,33 +414,37 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
       {!isJoined ? (
         <div
           onClick={handleJoinClick}
-          className="w-full rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-blue-400 dark:hover:border-blue-600 transition-colors"
+          className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-zinc-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {isAuthed ? "Nhấn để tham gia thảo luận..." : "Đăng nhập để bình luận..."}
+            {isReadOnly
+              ? "Tài khoản bị cấm, chỉ có thể xem bình luận."
+              : isAuthed
+                ? "Nhấn để tham gia thảo luận..."
+                : "Đăng nhập để bình luận..."}
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-950">
-          <div className="border border-zinc-200 dark:border-zinc-800 rounded-md p-3 mb-4 bg-zinc-50 dark:bg-zinc-900 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all">
+        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-950">
+          <div className="border border-zinc-200 dark:border-zinc-800 rounded-md p-3 mb-4 bg-zinc-50 dark:bg-zinc-900 focus-within:border-orange-400 transition-all">
             <TiptapEditor value={commentHtml} onChange={setCommentHtml} showToolbar={showToolbar} />
           </div>
           <div className="flex justify-between items-center">
-            <button onClick={() => setShowToolbar(!showToolbar)} className="text-xs font-medium text-blue-600 hover:underline">
+            <button onClick={() => setShowToolbar(!showToolbar)} className="text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
               {showToolbar ? "Ẩn định dạng" : "Hiển thị định dạng"}
             </button>
             <div className="flex gap-2">
               <button
                 onClick={() => { setIsJoined(false); setErrorMsg(""); }}
-                className="px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full"
               >
                 Hủy
               </button>
               <button
                 onClick={handlePostComment}
                 disabled={submitting || !commentHtml.trim() || commentHtml === "<p></p>"}
-                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-sm font-semibold bg-orange-500 text-white rounded-full hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {submitting && (
                   <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -426,7 +457,7 @@ export function GenericComments({ targetType, targetDocumentId, initialComments 
       )}
 
       {/* Comment list */}
-      <div className="mt-8 space-y-4">
+      <div className="mt-4 space-y-3">
         {topLevel.map((comment) => (
           <CommentCard
             key={comment.documentId}

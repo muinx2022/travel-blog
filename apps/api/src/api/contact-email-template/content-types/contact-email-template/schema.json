@@ -1,0 +1,48 @@
+﻿{
+  "kind": "singleType",
+  "collectionName": "contact_email_templates",
+  "info": {
+    "singularName": "contact-email-template",
+    "pluralName": "contact-email-templates",
+    "displayName": "Contact Email Template"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "ownerSubject": {
+      "type": "string",
+      "required": true,
+      "default": "[Travel Blog] Ban nhan duoc lien he moi"
+    },
+    "ownerBody": {
+      "type": "text",
+      "required": true,
+      "default": "Xin chao {ownerName},\\n\\n{requesterName} da lien he ve \\\"{targetTitle}\\\" ({targetType}).\\nNoi dung:\\n{message}\\n\\nTrang chi tiet: {targetLink}"
+    },
+    "adminSubject": {
+      "type": "string",
+      "required": true,
+      "default": "[Travel Blog] Co lien he moi tu nguoi dung"
+    },
+    "adminBody": {
+      "type": "text",
+      "required": true,
+      "default": "Nguoi gui: {requesterName} ({requesterEmail})\\nMuc tieu: \\\"{targetTitle}\\\" ({targetType})\\nOwner: {ownerName} ({ownerEmail})\\nNoi dung:\\n{message}\\n\\nTrang chi tiet: {targetLink}"
+    },
+    "requesterSubject": {
+      "type": "string",
+      "required": true,
+      "default": "[Travel Blog] Da gui lien he thanh cong"
+    },
+    "requesterBody": {
+      "type": "text",
+      "required": true,
+      "default": "Chao {requesterName},\\n\\nBan da gui lien he den \\\"{targetTitle}\\\" ({targetType}).\\nNoi dung cua ban:\\n{message}\\n\\nChung toi da thong bao den chu so huu noi dung va admin."
+    },
+    "serviceOverrides": {
+      "type": "json",
+      "default": {}
+    }
+  }
+}

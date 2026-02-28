@@ -1,91 +1,90 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { LeftSidebar } from "@/components/left-sidebar";
-import { RightSidebar } from "@/components/right-sidebar";
 import { AuthProvider } from "@/components/auth-context";
+import { AccountBanBanner } from "@/components/account-ban-banner";
+import { BanRouteGuard } from "@/components/ban-route-guard";
 import { SiteHeader } from "@/components/site-header";
 import { LoginModal } from "@/components/login-modal";
+import { getPublicContentPages, getAllCategories } from "@/lib/strapi";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+  weight: ["600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Starter Web",
-  description: "Next.js storefront for posts, categories and comments",
+  title: "Nexa Travel | Tour and Hotel",
+  description: "Travel, tour and hotel booking portal",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [contentPages, allCategories] = await Promise.all([
+    getPublicContentPages(),
+    getAllCategories(),
+  ]);
+  const footerPages = contentPages.filter((item) => item.showInFooter).slice(0, 4);
+  const navCategories = allCategories
+    .filter((cat) => !cat.parent?.documentId)
+    .map((cat) => ({ slug: cat.slug, name: cat.name }));
+
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-900`}
-      >
+    <html lang="vi" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var m=window.matchMedia('(prefers-color-scheme: dark)');var a=function(){document.documentElement.classList.toggle('dark',m.matches);};a();if(typeof m.addEventListener==='function'){m.addEventListener('change',a);}else if(typeof m.addListener==='function'){m.addListener(a);}}catch(e){}})();",
+          }}
+        />
+      </head>
+      <body className={`${manrope.variable} ${playfair.variable} travel-body antialiased`}>
         <AuthProvider>
-          {/* Row 1: Header */}
-          <SiteHeader />
+          <div className="relative min-h-screen overflow-x-clip">
+            <div aria-hidden className="travel-glow travel-glow-top" />
+            <div aria-hidden className="travel-glow travel-glow-bottom" />
 
-          {/* Login Modal */}
-          <LoginModal />
+            <SiteHeader contentPages={contentPages} navCategories={navCategories} />
+            <AccountBanBanner />
+            <BanRouteGuard />
+            <LoginModal />
 
-          {/* Row 2: Main Layout */}
-          <div className="flex-1 container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-              {/* Col 1: Left Sidebar */}
-              <aside className="md:col-span-3 space-y-2">
-                <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm">
-                  <h3 className="flex items-center gap-2 font-semibold text-sm uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
-                    Danh mục
-                  </h3>
-                  <LeftSidebar />
+            <main className="relative z-10">{children}</main>
+
+            <footer className="relative z-10 mt-16 border-t border-sky-100/70 bg-white/80 backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70">
+              <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-8 text-sm text-slate-600 dark:text-slate-300 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="font-semibold tracking-wide text-slate-900 dark:text-slate-100">Nexa Travel</p>
+                  <p>Tour tron goi, khach san chat luong, ho tro 24/7.</p>
                 </div>
-              </aside>
-
-              {/* Col 2: Main Content */}
-              <main className="md:col-span-6 space-y-4">
-                {children}
-              </main>
-
-              {/* Col 3: Right Sidebar */}
-              <aside className="md:col-span-3 space-y-2">
-                <div className="bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm">
-                  <h3 className="flex items-center gap-2 font-semibold text-sm uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    Bài viết nổi bật
-                  </h3>
-                  <RightSidebar />
+                <div className="flex flex-wrap items-center gap-4">
+                  <a className="transition-colors hover:text-sky-700 dark:hover:text-sky-400" href="#top-destinations">Dia diem</a>
+                  <a className="transition-colors hover:text-sky-700 dark:hover:text-sky-400" href="#insights">Bai viet</a>
+                  {footerPages.map((page) => (
+                    <Link
+                      key={page.documentId}
+                      className="transition-colors hover:text-sky-700 dark:hover:text-sky-400"
+                      href={`/pages/${page.slug}`}
+                    >
+                      {page.navigationLabel || page.title}
+                    </Link>
+                  ))}
                 </div>
-              </aside>
-            </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Copyright {new Date().getFullYear()} Nexa Travel</p>
+              </div>
+            </footer>
           </div>
-
-          {/* Row 3: Footer */}
-          <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 mt-auto">
-            <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold text-xs">M</div>
-                <span className="font-medium text-zinc-700 dark:text-zinc-300">MyWeb</span>
-              </div>
-              <p>© {new Date().getFullYear()} MyWeb. All rights reserved.</p>
-              <div className="flex gap-4">
-                <a href="#" className="hover:text-blue-600 transition-colors">Điều khoản</a>
-                <a href="#" className="hover:text-blue-600 transition-colors">Bảo mật</a>
-                <a href="#" className="hover:text-blue-600 transition-colors">Liên hệ</a>
-              </div>
-            </div>
-          </footer>
         </AuthProvider>
       </body>
     </html>

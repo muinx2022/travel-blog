@@ -1,8 +1,9 @@
 import type { Core } from '@strapi/strapi';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
-const uploadTmpDir = path.join(process.cwd(), 'tmp', 'formidable');
+const uploadTmpDir = path.join(os.tmpdir(), 'strapi-upload-tmp');
 fs.mkdirSync(uploadTmpDir, { recursive: true });
 
 const config: Core.Config.Middlewares = [
@@ -24,6 +25,7 @@ const config: Core.Config.Middlewares = [
   },
   'strapi::session',
   'strapi::favicon',
+
   'strapi::public',
 ];
 

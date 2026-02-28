@@ -1,3 +1,15 @@
+export type PermissionAction =
+  | "list"
+  | "find"
+  | "create"
+  | "update"
+  | "delete"
+  | "publish"
+  | "unpublish"
+  | "view";
+
+export type PermissionMap = Record<string, Partial<Record<PermissionAction, boolean>>>;
+
 export type AdminSession = {
   jwt: string;
   user: {
@@ -5,7 +17,9 @@ export type AdminSession = {
     username: string;
     email?: string;
     roleName?: string;
+    roleType?: string;
   };
+  permissions: PermissionMap;
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:1337";
@@ -32,6 +46,32 @@ type MeResponse = {
   };
 };
 
+async function tryReadRoleInfo(jwt: string) {
+  try {
+    const meResponse = await fetch(`${API_URL}/api/users/me?populate=role`, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!meResponse.ok) {
+      return { roleName: undefined, roleType: undefined };
+    }
+
+    const mePayload = (await meResponse.json()) as MeResponse;
+    return {
+      roleName: mePayload.role?.name,
+      roleType: mePayload.role?.type,
+    };
+  } catch {
+    return {
+      roleName: undefined,
+      roleType: undefined,
+    };
+  }
+}
+
 export async function loginAsAdmin(identifier: string, password: string) {
   const authResponse = await fetch(`${API_URL}/api/auth/local`, {
     method: "POST",
@@ -47,42 +87,38 @@ export async function loginAsAdmin(identifier: string, password: string) {
     throw new Error(authPayload.error?.message ?? "Login failed");
   }
 
-  const meResponse = await fetch(`${API_URL}/api/users/me?populate=role`, {
+  const roleInfo = await tryReadRoleInfo(authPayload.jwt);
+
+  const permissionsResponse = await fetch(`${API_URL}/api/management/my-permissions`, {
     headers: {
       Authorization: `Bearer ${authPayload.jwt}`,
       "Content-Type": "application/json",
     },
   });
 
-  const mePayload = (await meResponse.json()) as MeResponse & {
-    error?: { message?: string };
-  };
-
-  if (!meResponse.ok) {
-    throw new Error(mePayload.error?.message ?? "Cannot read user profile");
-  }
-
-  // Probe an admin-only endpoint to validate effective admin access.
-  // This avoids mismatches between role naming/grouping conventions.
-  const probeResponse = await fetch(`${API_URL}/api/management/dashboard`, {
-    headers: {
-      Authorization: `Bearer ${authPayload.jwt}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!probeResponse.ok) {
+  if (permissionsResponse.status === 401 || permissionsResponse.status === 403) {
     throw new Error("User does not have Admin access");
   }
+  if (!permissionsResponse.ok) {
+    const payload = (await permissionsResponse.json().catch(() => ({}))) as { error?: { message?: string } };
+    throw new Error(payload.error?.message ?? "Failed to load permissions");
+  }
+
+  const permissionsPayload = (await permissionsResponse.json()) as {
+    permissions?: PermissionMap;
+    role?: { id?: number; name?: string; type?: string };
+  };
 
   return {
     jwt: authPayload.jwt,
     user: {
-      id: mePayload.id,
-      username: mePayload.username,
-      email: mePayload.email,
-      roleName: mePayload.role?.name,
+      id: authPayload.user.id,
+      username: authPayload.user.username,
+      email: authPayload.user.email,
+      roleName: permissionsPayload.role?.name ?? roleInfo.roleName,
+      roleType: permissionsPayload.role?.type ?? roleInfo.roleType,
     },
+    permissions: permissionsPayload.permissions ?? {},
   } satisfies AdminSession;
 }
 

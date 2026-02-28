@@ -18,6 +18,43 @@ function andFilters(a: any, b: any) {
   return a ?? b;
 }
 
+async function safeCountDocuments(strapi: any, uid: string, params: any) {
+  try {
+    const count = await strapi.documents(uid).count(params);
+    if (Number.isFinite(count)) {
+      return Number(count);
+    }
+  } catch {
+    // Fallback for environments where documents().count is unavailable.
+  }
+
+  const pageSize = 1000;
+  let page = 1;
+  let total = 0;
+  const { pagination: _ignored, ...baseParams } = params ?? {};
+
+  while (true) {
+    const rows = (await strapi.documents(uid).findMany({
+      ...baseParams,
+      fields: ['documentId'],
+      pagination: { page, pageSize },
+    })) as Array<{ documentId?: string }>;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      break;
+    }
+
+    total += rows.length;
+
+    if (rows.length < pageSize) {
+      break;
+    }
+    page += 1;
+  }
+
+  return total;
+}
+
 async function findAllDocumentIdsByStatus(
   strapi: any,
   status: 'draft' | 'published',
@@ -90,12 +127,12 @@ export default factories.createCoreService(UID, ({ strapi }) => ({
         pagination: { page, pageSize },
         status,
       }),
-      strapi.documents(UID).count({ status, filters: effectiveFilters }),
+      safeCountDocuments(strapi, UID, { status, filters: effectiveFilters }),
     ]);
 
     const enriched = await Promise.all(
       (data as any[]).map(async (item) => {
-        const commentCount = await strapi.documents(COMMENT_UID).count({
+        const commentCount = await safeCountDocuments(strapi, COMMENT_UID, {
           filters: {
             targetType: { $eq: 'post' },
             targetDocumentId: { $eq: item.documentId },
@@ -158,10 +195,35 @@ export default factories.createCoreService(UID, ({ strapi }) => ({
       const authorId = Number(data.author);
       data.author = Number.isFinite(authorId) ? authorId : null;
     }
-    return strapi.documents(UID).update({
+    const publishedBeforeUpdate = await strapi.documents(UID).findOne({
+      documentId,
+      status: 'published',
+      fields: ['documentId'],
+    });
+
+    let updated = await strapi.documents(UID).update({
       documentId,
       data,
     });
+
+    if (publishedBeforeUpdate) {
+      const documentsApi = strapi.documents(UID) as any;
+      if (typeof documentsApi.publish === 'function') {
+        const result = await documentsApi.publish({ documentId });
+        updated = result?.entries?.[0] ?? updated;
+      } else if (updated?.id) {
+        await strapi.entityService.update(UID, updated.id, {
+          data: { publishedAt: new Date().toISOString() },
+        });
+        const publishedUpdated = await strapi.documents(UID).findOne({
+          documentId,
+          status: 'published',
+        });
+        updated = publishedUpdated ?? updated;
+      }
+    }
+
+    return updated;
   },
 
   async deleteForAdmin(documentId: string) {

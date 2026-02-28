@@ -78,8 +78,13 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
       }
 
       const { title, content, categories } = ctx.request.body?.data || {};
+      const publishedBeforeUpdate = await strapi.documents('api::post.post').findOne({
+        documentId,
+        status: 'published',
+        fields: ['documentId'],
+      });
 
-      const updated = await strapi.documents('api::post.post').update({
+      let updated = await strapi.documents('api::post.post').update({
         documentId,
         data: {
           ...(title && { title }),
@@ -87,6 +92,23 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
           ...(categories && { categories }),
         },
       });
+
+      if (publishedBeforeUpdate) {
+        const documentsApi = strapi.documents('api::post.post') as any;
+        if (typeof documentsApi.publish === 'function') {
+          const result = await documentsApi.publish({ documentId });
+          updated = result?.entries?.[0] ?? updated;
+        } else if (updated?.id) {
+          await strapi.entityService.update('api::post.post', updated.id, {
+            data: { publishedAt: new Date().toISOString() },
+          });
+          const publishedUpdated = await strapi.documents('api::post.post').findOne({
+            documentId,
+            status: 'published',
+          });
+          updated = publishedUpdated ?? updated;
+        }
+      }
 
       ctx.body = { data: updated };
     } catch (error) {

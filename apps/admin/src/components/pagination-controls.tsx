@@ -17,7 +17,7 @@ export function PaginationControls({
   onPageChange,
 }: PaginationControlsProps) {
   return (
-    <div className="mt-4 flex items-center justify-between gap-3">
+    <div className="mt-4 flex items-center justify-between gap-3 px-4 pb-4">
       <p className="text-sm text-muted-foreground">
         Total: {total} | Page {page}/{pageCount}
       </p>

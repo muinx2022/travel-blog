@@ -234,7 +234,9 @@ export function RichTextEditor({
           onChange={onUploadImage}
         />
       </div>
-      <EditorContent editor={editor} />
+      <div className="max-h-[420px] overflow-y-auto">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }

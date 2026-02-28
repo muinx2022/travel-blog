@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "entity_medias",
+  "info": {
+    "singularName": "entity-media",
+    "pluralName": "entity-medias",
+    "displayName": "Entity Media",
+    "description": "Polymorphic media storage for all entities (hotels, posts, tours, etc.)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images", "videos"]
+    },
+    "caption": {
+      "type": "string"
+    },
+    "altText": {
+      "type": "string"
+    },
+    "mediaCategory": {
+      "type": "enumeration",
+      "enum": ["thumbnail", "gallery", "video"],
+      "default": "gallery"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "entityType": {
+      "type": "string",
+      "required": true
+    },
+    "entityDocumentId": {
+      "type": "string",
+      "required": true
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

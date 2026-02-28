@@ -18,5 +18,14 @@ export default {
         policies: [],
       },
     },
+    {
+      method: 'POST',
+      path: '/interactions/contact',
+      handler: 'api::interaction.interaction.contact',
+      config: {
+        auth: false,
+        policies: [],
+      },
+    },
   ],
 };

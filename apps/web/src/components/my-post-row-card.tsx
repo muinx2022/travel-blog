@@ -30,7 +30,7 @@ export function MyPostRowCard({ post }: { post: MyPostRow }) {
       )}
 
       <Link
-        href={`/p/${post.slug}--${post.documentId}`}
+        href={`/posts/${post.slug}--${post.documentId}`}
         className="block text-xl font-semibold leading-snug text-zinc-900 transition-colors group-hover:text-blue-600 dark:text-zinc-100 dark:group-hover:text-blue-400"
       >
         {post.title}
@@ -55,3 +55,4 @@ export function MyPostRowCard({ post }: { post: MyPostRow }) {
     </div>
   );
 }
+

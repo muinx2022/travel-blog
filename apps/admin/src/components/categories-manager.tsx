@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { GripVertical, Pencil, Plus, Trash2, Tag } from "lucide-react";
+
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   DndContext,
@@ -18,13 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IconAction } from "@/components/icon-action";
 import {
-  deleteCategory,
+  categoriesApi,
   listAllCategories,
-  publishCategory,
   reorderCategory,
-  unpublishCategory,
   type CategoryItem,
 } from "@/lib/admin-api";
+import { can } from "@/lib/permissions";
 
 function toPlainText(value?: string) {
   return (value ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -45,6 +45,11 @@ function CategoryRow({
   togglingDocumentId,
   renderChildren,
   isDragging,
+  canUpdate,
+  canDelete,
+  canTogglePublish,
+  canPublish,
+  canUnpublish,
 }: {
   item: CategoryItem;
   level: number;
@@ -53,6 +58,11 @@ function CategoryRow({
   togglingDocumentId: string | null;
   renderChildren: ReactNode;
   isDragging: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canTogglePublish: boolean;
+  canPublish: boolean;
+  canUnpublish: boolean;
 }) {
   const { attributes, listeners, setNodeRef: setDragRef, isDragging: isBeingDragged } = useDraggable({
     id: `cat-${item.id}`,
@@ -91,29 +101,46 @@ function CategoryRow({
         </div>
         <div className="text-muted-foreground">{item.slug}</div>
         <div className="text-muted-foreground">{item.parent?.name ?? "-"}</div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              item.publishedAt ? "bg-emerald-600" : "bg-muted-foreground/30"
-            }`}
-            onClick={() => onTogglePublished(item)}
-            disabled={togglingDocumentId === item.documentId}
-            title={item.publishedAt ? "Published" : "Draft"}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-background shadow transition-transform ${
-                item.publishedAt ? "translate-x-5" : "translate-x-0.5"
+        <div className="flex items-center">
+          {canTogglePublish ? (
+            <button
+              type="button"
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                item.publishedAt ? "bg-emerald-600" : "bg-muted-foreground/30"
               }`}
-            />
-            <span className="sr-only">{item.publishedAt ? "Published" : "Draft"}</span>
-          </button>
-          <span className="text-xs text-muted-foreground">{item.publishedAt ? "Published" : "Draft"}</span>
+              onClick={() => onTogglePublished(item)}
+              disabled={
+                togglingDocumentId === item.documentId ||
+                (item.publishedAt ? !canUnpublish : !canPublish)
+              }
+              title={item.publishedAt ? "Published" : "Draft"}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-background shadow transition-transform ${
+                  item.publishedAt ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+              <span className="sr-only">{item.publishedAt ? "Published" : "Draft"}</span>
+            </button>
+          ) : (
+            <span className="text-xs text-muted-foreground">{item.publishedAt ? "Published" : "Draft"}</span>
+          )}
         </div>
         <div className="text-muted-foreground">{formatDate(item.updatedAt)}</div>
         <div className="flex justify-end gap-2">
-          <IconAction label="Edit category" icon={<Pencil />} href={`/categories/${item.documentId}/edit`} variant="outline" />
-          <IconAction label="Delete category" icon={<Trash2 />} onClick={() => onDelete(item)} variant="destructive" />
+          {canUpdate && (
+            <IconAction label="Edit category" icon={<Pencil className="h-4 w-4" />} href={`/categories/${item.documentId}/edit`} variant="ghost" />
+          )}
+          {canDelete && (
+            <button
+              type="button"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+              onClick={() => onDelete(item)}
+              title="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -165,6 +192,13 @@ function DroppableRootZone({ isDragging }: { isDragging: boolean }) {
 }
 
 export function CategoriesManager() {
+  const canCreate = can("category", "create");
+  const canUpdate = can("category", "update");
+  const canDelete = can("category", "delete");
+  const canPublish = can("category", "publish");
+  const canUnpublish = can("category", "unpublish");
+  const canTogglePublish = canPublish || canUnpublish;
+
   const [rows, setRows] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -213,7 +247,7 @@ export function CategoriesManager() {
   const onDelete = async (item: CategoryItem) => {
     if (!confirm(`Delete category "${item.name}"?`)) return;
     try {
-      await deleteCategory(item.documentId);
+      await categoriesApi.delete(item.documentId);
       toast({ title: "Category deleted", variant: "success" });
       await load();
     } catch (deleteError) {
@@ -253,7 +287,7 @@ export function CategoriesManager() {
   const onTogglePublished = async (item: CategoryItem) => {
     try {
       setTogglingDocumentId(item.documentId);
-      const updated = item.publishedAt ? await unpublishCategory(item.documentId) : await publishCategory(item.documentId);
+      const updated = item.publishedAt ? await categoriesApi.unpublish(item.documentId) : await categoriesApi.publish(item.documentId);
       setRows((prev) =>
         prev.map((row) =>
           row.documentId === item.documentId ? { ...row, publishedAt: updated.publishedAt ?? null, updatedAt: updated.updatedAt } : row
@@ -325,29 +359,60 @@ export function CategoriesManager() {
             togglingDocumentId={togglingDocumentId}
             renderChildren={renderTree(item.id, level + 1, newVisited)}
             isDragging={isDragging}
+            canUpdate={canUpdate}
+            canDelete={canDelete}
+            canTogglePublish={canTogglePublish}
+            canPublish={canPublish}
+            canUnpublish={canUnpublish}
           />
         );
       });
     },
-    [childrenByParentId, onTogglePublished, onDelete, togglingDocumentId, activeId]
+    [
+      childrenByParentId,
+      onTogglePublished,
+      onDelete,
+      togglingDocumentId,
+      activeId,
+      canUpdate,
+      canDelete,
+      canTogglePublish,
+      canPublish,
+      canUnpublish,
+    ]
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-xl font-semibold tracking-tight">Categories</CardTitle>
-            <p className="text-sm text-muted-foreground">Manage category tree and ordering</p>
+    <div className="space-y-6 animate-fade-in">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+            <span>Content</span>
+            <span>/</span>
+            <span className="text-foreground font-medium">Categories</span>
           </div>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/categories/new" className="inline-flex items-center gap-1.5">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Tag className="h-6 w-6 text-primary" />
+            Categories
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage category tree and ordering</p>
+        </div>
+        {canCreate && (
+          <Button asChild className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">
+            <Link href="/categories/new" className="inline-flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Create Category
             </Link>
           </Button>
-        </div>
-      </CardHeader>
+        )}
+      </div>
+
+      <Card className="border-0 shadow-md overflow-hidden">
+        <CardHeader className="border-b bg-muted/30">
+          <CardTitle className="text-sm font-semibold">Category Tree</CardTitle>
+        </CardHeader>
+
       <CardContent>
         {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -372,11 +437,28 @@ export function CategoriesManager() {
             </div>
           </DndContext>
         )}
-        {rows.length === 0 && !loading && <p className="text-sm text-muted-foreground">No categories yet.</p>}
+        {rows.length === 0 && !loading && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Tag className="h-6 w-6 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm font-medium text-foreground">No categories found</p>
+            <p className="text-xs text-muted-foreground mt-1">Create your first category to get started</p>
+            {canCreate && (
+              <Button asChild size="sm" className="mt-4">
+                <Link href="/categories/new">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Create Category
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
         <p className="mt-3 text-xs text-muted-foreground">
           Drag category row (grip icon) and drop on another row to set parent-child. Drop on dashed line to reorder.
         </p>
       </CardContent>
     </Card>
+    </div>
   );
 }

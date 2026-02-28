@@ -8,11 +8,12 @@ import { listUsers, type UserItem } from "@/lib/admin-api";
 
 type PostAuthorPickerProps = {
   open: boolean;
-  onClose: () => void;
+  onClose?: () => void;
+  onOpenChange?: (open: boolean) => void;
   onSelect: (user: UserItem) => void;
 };
 
-export function PostAuthorPicker({ open, onClose, onSelect }: PostAuthorPickerProps) {
+export function PostAuthorPicker({ open, onClose, onOpenChange, onSelect }: PostAuthorPickerProps) {
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,12 +44,17 @@ export function PostAuthorPicker({ open, onClose, onSelect }: PostAuthorPickerPr
     return null;
   }
 
+  const closePicker = () => {
+    onClose?.();
+    onOpenChange?.(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-xl rounded-lg border bg-background shadow-lg">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <p className="font-semibold">Select Author</p>
-          <Button type="button" size="icon-sm" variant="ghost" onClick={onClose}>
+          <Button type="button" size="icon-sm" variant="ghost" onClick={closePicker}>
             <X />
           </Button>
         </div>
@@ -72,7 +78,7 @@ export function PostAuthorPicker({ open, onClose, onSelect }: PostAuthorPickerPr
                 className="flex w-full items-center justify-between rounded-md border px-3 py-2 text-left hover:bg-accent"
                 onClick={() => {
                   onSelect(user);
-                  onClose();
+                  closePicker();
                 }}
               >
                 <div>

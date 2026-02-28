@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ensureNotBanned } from "../_shared/ban-guard";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:1337";
 
@@ -7,12 +8,18 @@ export async function POST(request: Request) {
   if (!authHeader) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const guard = await ensureNotBanned(authHeader);
+  if ("error" in guard) return guard.error;
 
   const body = await request.json();
+  const endpoint =
+    body?.mode === "contact" || body?.actionType === "contact"
+      ? "/api/interactions/contact"
+      : "/api/interactions/toggle";
 
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/api/interactions/toggle`, {
+    res = await fetch(`${API_URL}${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,7 +42,7 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get("Authorization") ?? "";
 
   if (!authHeader || !targetType) {
-    return NextResponse.json({ liked: false, followed: false });
+    return NextResponse.json({ liked: false, followed: false, reported: false });
   }
 
   let query = `/api/interactions/mine?targetType=${encodeURIComponent(targetType)}`;
@@ -50,11 +57,11 @@ export async function GET(request: Request) {
       cache: "no-store",
     });
   } catch {
-    return NextResponse.json({ liked: false, followed: false });
+    return NextResponse.json({ liked: false, followed: false, reported: false });
   }
 
   if (!res.ok) {
-    return NextResponse.json({ liked: false, followed: false });
+    return NextResponse.json({ liked: false, followed: false, reported: false });
   }
 
   const data = await res.json();
@@ -67,5 +74,6 @@ export async function GET(request: Request) {
   return NextResponse.json({
     liked: interactions.some((i) => i.actionType === "like"),
     followed: interactions.some((i) => i.actionType === "follow"),
+    reported: interactions.some((i) => i.actionType === "report"),
   });
 }

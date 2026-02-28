@@ -1,23 +1,47 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Post } from "@/lib/strapi";
 import { PostCard } from "@/components/post-card";
 
-export function InfinitePosts({ initialPosts, initialTotal, categorySlug }: { initialPosts: Post[], initialTotal: number, categorySlug?: string }) {
+export function InfinitePosts({
+  initialPosts,
+  initialTotal,
+  categorySlug,
+  tagSlug,
+  pageSize = 10,
+  totalOffset = 0,
+}: {
+  initialPosts: Post[];
+  initialTotal: number;
+  categorySlug?: string;
+  tagSlug?: string;
+  pageSize?: number;
+  totalOffset?: number;
+}) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialPosts.length < initialTotal);
+
+  useEffect(() => {
+    setPosts(initialPosts);
+    setPage(1);
+    setLoading(false);
+    setHasMore(initialPosts.length < initialTotal);
+  }, [initialPosts, initialTotal, categorySlug, tagSlug]);
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
       const nextPage = page + 1;
-      let url = `/api/posts-proxy?page=${nextPage}`;
+      let url = `/api/posts-proxy?page=${nextPage}&pageSize=${pageSize}`;
       if (categorySlug) {
         url += `&category=${categorySlug}`;
+      }
+      if (tagSlug) {
+        url += `&tag=${tagSlug}`;
       }
       
       const res = await fetch(url);
@@ -25,14 +49,14 @@ export function InfinitePosts({ initialPosts, initialTotal, categorySlug }: { in
         const data = await res.json();
         setPosts((prev) => [...prev, ...data.data]);
         setPage(nextPage);
-        setHasMore(posts.length + data.data.length < data.meta.pagination.total);
+        setHasMore(posts.length + data.data.length < data.meta.pagination.total - totalOffset);
       }
     } catch (error) {
       console.error("Failed to load more posts", error);
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page, posts.length, categorySlug]);
+  }, [loading, hasMore, page, posts.length, categorySlug, tagSlug, pageSize, totalOffset]);
 
   return (
     <div className="space-y-6">
@@ -50,9 +74,6 @@ export function InfinitePosts({ initialPosts, initialTotal, categorySlug }: { in
             {loading ? "Đang tải..." : "Tải thêm"}
           </button>
         </div>
-      )}
-      {!hasMore && posts.length > 0 && (
-        <div className="text-center text-sm text-gray-500 py-4">Đã tải hết bài viết</div>
       )}
       {posts.length === 0 && (
         <div className="text-center text-sm text-gray-500 py-4">Chưa có bài viết nào</div>

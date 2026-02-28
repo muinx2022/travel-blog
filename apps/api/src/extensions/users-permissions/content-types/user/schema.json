@@ -72,6 +72,13 @@
       "multiple": false,
       "required": false,
       "allowedTypes": ["images"]
+    },
+    "isBanned": {
+      "type": "boolean",
+      "default": false
+    },
+    "banReason": {
+      "type": "text"
     }
   }
 }

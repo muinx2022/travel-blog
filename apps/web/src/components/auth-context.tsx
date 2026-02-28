@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:1337";
 
@@ -14,6 +14,8 @@ type StrapiMe = {
   email: string;
   username: string;
   bio?: string | null;
+  isBanned?: boolean;
+  banReason?: string | null;
   avatar?: unknown;
 };
 
@@ -25,6 +27,8 @@ export type User = {
   avatarId?: number | null;
   avatarUrl?: string | null;
   avatarVersion?: number;
+  isBanned?: boolean;
+  banReason?: string | null;
   jwt: string;
 };
 
@@ -183,6 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: hydratedUser.email,
         username: hydratedUser.username,
         bio: hydratedUser.bio ?? null,
+        isBanned: Boolean(hydratedUser.isBanned),
+        banReason: hydratedUser.banReason ?? null,
         avatarId: avatar?.id ?? null,
         avatarVersion: avatar?.id ?? 0,
         avatarUrl: toAbsoluteMediaUrl(avatar?.url, avatar?.id ?? null),
@@ -252,6 +258,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: payload.username ?? user.username,
         email: payload.email ?? user.email,
         bio: payload.bio ?? null,
+        isBanned: user.isBanned ?? false,
+        banReason: user.banReason ?? null,
         avatarId: avatar?.id ?? null,
         avatarVersion: nextAvatarVersion,
         avatarUrl: toAbsoluteMediaUrl(avatar?.url, nextAvatarVersion),
@@ -276,6 +284,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     clearAuthState();
   }, [clearAuthState]);
+
+  useEffect(() => {
+    if (!user?.jwt) {
+      return;
+    }
+
+    let active = true;
+    void fetchCurrentUser(user.jwt).then((me) => {
+      if (!active || !me) {
+        return;
+      }
+
+      const avatar = getMediaFromPayload(me.avatar);
+      const nextUser: User = {
+        ...user,
+        id: me.id,
+        email: me.email,
+        username: me.username,
+        bio: me.bio ?? null,
+        isBanned: Boolean(me.isBanned),
+        banReason: me.banReason ?? null,
+        avatarId: avatar?.id ?? null,
+        avatarUrl: toAbsoluteMediaUrl(avatar?.url, user.avatarVersion ?? avatar?.id ?? null),
+      };
+
+      const sameState =
+        user.id === nextUser.id &&
+        user.email === nextUser.email &&
+        user.username === nextUser.username &&
+        (user.bio ?? null) === (nextUser.bio ?? null) &&
+        Boolean(user.isBanned) === Boolean(nextUser.isBanned) &&
+        (user.banReason ?? null) === (nextUser.banReason ?? null) &&
+        (user.avatarId ?? null) === (nextUser.avatarId ?? null) &&
+        (user.avatarUrl ?? null) === (nextUser.avatarUrl ?? null);
+
+      if (sameState) {
+        return;
+      }
+
+      setUser(nextUser);
+      if (localStorage.getItem("auth_user")) {
+        localStorage.setItem("auth_user", JSON.stringify(nextUser));
+      }
+      if (sessionStorage.getItem("auth_user")) {
+        sessionStorage.setItem("auth_user", JSON.stringify(nextUser));
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   return (
     <AuthContext.Provider

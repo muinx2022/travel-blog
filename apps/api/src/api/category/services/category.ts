@@ -53,8 +53,6 @@ export default factories.createCoreService(UID, ({ strapi }) => ({
       }),
     ]);
 
-    console.log('[category.listForAdmin] draft count:', allDraftData?.length, 'published count:', allPublishedData?.length);
-
     const merged = new Map<string, any>();
     
     for (const item of allDraftData as any[]) {
@@ -76,14 +74,10 @@ export default factories.createCoreService(UID, ({ strapi }) => ({
     const allData = Array.from(merged.values()).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     const total = allData.length;
     
-    console.log('[category.listForAdmin] merged total:', total, 'page:', page, 'pageSize:', pageSize);
-    
     // Apply pagination after merging
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     const data = allData.slice(start, end);
-
-    console.log('[category.listForAdmin] returning:', data.length, 'items');
 
     return {
       data,

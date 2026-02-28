@@ -11,8 +11,8 @@ type Option = {
 };
 
 type MultiSelectBoxProps = {
-  options: Option[];
-  value: string[];
+  options?: Option[];
+  value?: string[];
   onChange: (next: string[]) => void;
   placeholder?: string;
   className?: string;
@@ -20,8 +20,8 @@ type MultiSelectBoxProps = {
 };
 
 export function MultiSelectBox({
-  options,
-  value,
+  options = [],
+  value = [],
   onChange,
   placeholder = "Select items",
   className,

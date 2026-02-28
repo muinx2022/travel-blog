@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { Fragment, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/app-toast";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,75 @@ const emptyForm = {
 };
 type CategoryField = "name" | "slug";
 type CategoryErrors = Partial<Record<CategoryField, string>>;
+type TreeCategory = CategoryItem & { children: TreeCategory[] };
+
+function buildCategoryTree(categories: CategoryItem[]) {
+  const map = new Map<number, TreeCategory>();
+  categories.forEach((category) => map.set(category.id, { ...category, children: [] }));
+  const roots: TreeCategory[] = [];
+
+  for (const category of categories) {
+    const node = map.get(category.id);
+    if (!node) {
+      continue;
+    }
+    if (category.parent?.id && map.has(category.parent.id)) {
+      map.get(category.parent.id)!.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+
+  return roots;
+}
+
+function collectDescendantDocumentIds(targetId: number, categories: CategoryItem[]) {
+  const childrenByParentId = new Map<number, CategoryItem[]>();
+  for (const item of categories) {
+    const parentId = item.parent?.id;
+    if (!parentId) {
+      continue;
+    }
+    const bucket = childrenByParentId.get(parentId) ?? [];
+    bucket.push(item);
+    childrenByParentId.set(parentId, bucket);
+  }
+
+  const blocked = new Set<string>();
+  const queue: number[] = [targetId];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current) {
+      continue;
+    }
+    const children = childrenByParentId.get(current) ?? [];
+    for (const child of children) {
+      if (!blocked.has(child.documentId)) {
+        blocked.add(child.documentId);
+        queue.push(child.id);
+      }
+    }
+  }
+
+  return blocked;
+}
+
+function CategoryOptions({ nodes, level = 0 }: { nodes: TreeCategory[]; level?: number }) {
+  return (
+    <>
+      {nodes.map((node) => (
+        <Fragment key={node.documentId}>
+          <option value={node.documentId}>
+            {"\u00A0".repeat(level * 4)}
+            {node.name}
+          </option>
+          {node.children.length > 0 && <CategoryOptions nodes={node.children} level={level + 1} />}
+        </Fragment>
+      ))}
+    </>
+  );
+}
 
 export function CategoryForm({ mode, documentId }: CategoryFormProps) {
   const router = useRouter();
@@ -32,7 +101,7 @@ export function CategoryForm({ mode, documentId }: CategoryFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
-  const [parentOptions, setParentOptions] = useState<CategoryItem[]>([]);
+  const [parentOptions, setParentOptions] = useState<TreeCategory[]>([]);
   const [slugTouched, setSlugTouched] = useState(false);
   const [errors, setErrors] = useState<CategoryErrors>({});
 
@@ -42,10 +111,17 @@ export function CategoryForm({ mode, documentId }: CategoryFormProps) {
       setError(null);
       try {
         const categories = await listAllCategories();
-        setParentOptions(categories.filter((item) => item.documentId !== documentId));
+        const sortedCategories = [...categories].sort(
+          (a, b) => (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER) ||
+            a.name.localeCompare(b.name),
+        );
+        let allowedCategories = sortedCategories;
 
         if (mode === "edit" && documentId) {
           const category = await getCategory(documentId);
+          const blockedDocumentIds = collectDescendantDocumentIds(category.id, sortedCategories);
+          blockedDocumentIds.add(category.documentId);
+          allowedCategories = sortedCategories.filter((item) => !blockedDocumentIds.has(item.documentId));
           setForm({
             name: category.name ?? "",
             slug: category.slug ?? "",
@@ -56,6 +132,8 @@ export function CategoryForm({ mode, documentId }: CategoryFormProps) {
         } else {
           setForm(emptyForm);
         }
+
+        setParentOptions(buildCategoryTree(allowedCategories));
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : "Failed to load category");
       } finally {
@@ -117,19 +195,30 @@ export function CategoryForm({ mode, documentId }: CategoryFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle>{mode === "edit" ? "Edit Category" : "Create Category"}</CardTitle>
-          <Button variant="outline" asChild>
-            <Link href="/categories">Back to list</Link>
-          </Button>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Content</span>
+          <span>/</span>
+          <span className="text-foreground font-medium">{mode === "edit" ? "Edit Category" : "New Category"}</span>
         </div>
-      </CardHeader>
-      <CardContent>
-        {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
-        {error && <p className="mb-3 text-sm text-destructive">{error}</p>}
-        {!loading && (
+        <h1 className="text-2xl font-bold tracking-tight">{mode === "edit" ? "Edit Category" : "Create Category"}</h1>
+        <p className="text-sm text-muted-foreground">Manage category hierarchy and details.</p>
+      </div>
+
+      <Card className="border-0 shadow-md overflow-hidden">
+        <CardHeader className="border-b bg-muted/30">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle>{mode === "edit" ? "Edit Category" : "Create Category"}</CardTitle>
+            <Button variant="outline" asChild>
+              <Link href="/categories">Back to list</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
+          {error && <p className="mb-3 text-sm text-destructive">{error}</p>}
+          {!loading && (
           <form className="space-y-3" onSubmit={onSubmit} noValidate>
             <Input
               placeholder="Name"
@@ -176,11 +265,7 @@ export function CategoryForm({ mode, documentId }: CategoryFormProps) {
               }
             >
               <option value="">No parent</option>
-              {parentOptions.map((item) => (
-                <option key={item.documentId} value={item.documentId}>
-                  {item.name}
-                </option>
-              ))}
+              <CategoryOptions nodes={parentOptions} />
             </select>
             <RichTextEditor
               value={form.description}
@@ -191,8 +276,9 @@ export function CategoryForm({ mode, documentId }: CategoryFormProps) {
               {saving ? "Saving..." : mode === "edit" ? "Update" : "Create"}
             </Button>
           </form>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

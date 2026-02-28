@@ -6,7 +6,10 @@ node_modules
 apps/api/.cache
 apps/api/build
 .env
+.env.docker
 .env.local
 apps/**/.env
 apps/**/.env.local
+apps/api/tmp
+.claude
 .DS_Store

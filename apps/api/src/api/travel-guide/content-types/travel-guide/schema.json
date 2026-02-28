@@ -1,0 +1,64 @@
+{
+  "kind": "collectionType",
+  "collectionName": "travel_guides",
+  "info": {
+    "singularName": "travel-guide",
+    "pluralName": "travel-guides",
+    "displayName": "Travel Guide"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "excerpt": {
+      "type": "text",
+      "maxLength": 500
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "guideType": {
+      "type": "enumeration",
+      "enum": ["cam-nang", "meo-du-lich", "lich-trinh-goi-y"],
+      "required": true,
+      "default": "cam-nang"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "inversedBy": "travelGuides"
+    },
+    "tags": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tag.tag",
+      "inversedBy": "travelGuides"
+    },
+    "author": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

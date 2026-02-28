@@ -1,0 +1,59 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_homepages",
+  "info": {
+    "singularName": "site-homepage",
+    "pluralName": "site-homepages",
+    "displayName": "Site Homepage"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "heroTitle": {
+      "type": "string",
+      "required": true,
+      "default": "Khám phá địa danh qua bài viết chi tiết và dễ áp dụng."
+    },
+    "heroSubtitle": {
+      "type": "text",
+      "default": "Blog chia sẻ địa danh, kinh nghiệm và cẩm nang du lịch Việt Nam."
+    },
+    "heroPrimaryCtaLabel": {
+      "type": "string",
+      "default": "Xem điểm đến"
+    },
+    "heroPrimaryCtaLink": {
+      "type": "string",
+      "default": "#top-destinations"
+    },
+    "heroSecondaryCtaLabel": {
+      "type": "string",
+      "default": "Đọc bài viết"
+    },
+    "heroSecondaryCtaLink": {
+      "type": "string",
+      "default": "#insights"
+    },
+    "featuredLabel": {
+      "type": "string",
+      "default": "Mới nhất"
+    },
+    "postsSectionTitle": {
+      "type": "string",
+      "default": "Bài viết mới nhất"
+    },
+    "destinationsSectionTitle": {
+      "type": "string",
+      "default": "Khám phá điểm đến"
+    },
+    "featuredPostsCount": {
+      "type": "integer",
+      "default": 3
+    },
+    "feedPostsCount": {
+      "type": "integer",
+      "default": 5
+    }
+  }
+}

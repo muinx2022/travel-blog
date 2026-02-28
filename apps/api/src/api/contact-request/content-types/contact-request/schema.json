@@ -1,0 +1,53 @@
+﻿{
+  "kind": "collectionType",
+  "collectionName": "contact_requests",
+  "info": {
+    "singularName": "contact-request",
+    "pluralName": "contact-requests",
+    "displayName": "Contact Request"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "targetType": {
+      "type": "enumeration",
+      "enum": ["hotel", "tour", "shop", "souvenir-shop", "restaurant", "homestay", "other"],
+      "required": true
+    },
+    "targetDocumentId": {
+      "type": "string",
+      "required": true
+    },
+    "targetTitle": {
+      "type": "string"
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "requesterName": {
+      "type": "string",
+      "required": true
+    },
+    "requesterEmail": {
+      "type": "email"
+    },
+    "requesterUser": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "ownerUser": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "sent", "failed"],
+      "default": "pending",
+      "required": true
+    }
+  }
+}

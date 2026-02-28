@@ -32,6 +32,42 @@
       "target": "api::post.post",
       "mappedBy": "categories"
     },
+    "tours": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tour.tour",
+      "mappedBy": "categories"
+    },
+    "hotels": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::hotel.hotel",
+      "mappedBy": "categories"
+    },
+    "homestays": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::homestay.homestay",
+      "mappedBy": "categories"
+    },
+    "restaurants": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::restaurant.restaurant",
+      "mappedBy": "categories"
+    },
+    "souvenirShops": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::souvenir-shop.souvenir-shop",
+      "mappedBy": "categories"
+    },
+    "travelGuides": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::travel-guide.travel-guide",
+      "mappedBy": "categories"
+    },
     "parent": {
       "type": "relation",
       "relation": "manyToOne",

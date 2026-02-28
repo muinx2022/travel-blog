@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tags",
+  "info": {
+    "singularName": "tag",
+    "pluralName": "tags",
+    "displayName": "Tag"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "posts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::post.post",
+      "mappedBy": "tags"
+    },
+    "tours": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::tour.tour",
+      "mappedBy": "tags"
+    },
+    "travelGuides": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::travel-guide.travel-guide",
+      "mappedBy": "tags"
+    }
+  }
+}

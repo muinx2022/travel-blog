@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_hotel_amenities",
+  "info": {
+    "displayName": "Amenity",
+    "icon": "star"
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

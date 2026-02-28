@@ -1,0 +1,62 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: travel-blog-api
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      - HOST=0.0.0.0
+      - PORT=1337
+    ports:
+      - "1338:1337"
+    volumes:
+      - travel_blog_uploads:/app/apps/api/public/uploads
+    networks:
+      - shared-stack
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: travel-blog-web
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+    ports:
+      - "3002:3000"
+    depends_on:
+      - api
+    networks:
+      - shared-stack
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    container_name: travel-blog-admin
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3001
+    ports:
+      - "3003:3001"
+    depends_on:
+      - api
+    networks:
+      - shared-stack
+
+networks:
+  shared-stack:
+    external: true
+    name: gikky-net_gikky-network
+
+volumes:
+  travel_blog_uploads:

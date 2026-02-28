@@ -10,7 +10,7 @@ export async function RightSidebar() {
         posts.map((post, index) => (
           <Link
             key={post.documentId}
-            href={`/p/${post.slug}--${post.documentId}`}
+            href={`/posts/${post.slug}--${post.documentId}`}
             className="flex items-start gap-3 py-2 px-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 group transition-colors"
           >
             <span className="shrink-0 w-5 h-5 mt-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 flex items-center justify-center text-xs font-bold text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -27,3 +27,4 @@ export async function RightSidebar() {
     </div>
   );
 }
+

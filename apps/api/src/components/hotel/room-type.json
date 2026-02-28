@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_hotel_room_types",
+  "info": {
+    "displayName": "Room Type",
+    "icon": "bed"
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "available": {
+      "type": "boolean",
+      "default": true
+    },
+    "amenities": {
+      "type": "text"
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images", "videos"]
+    },
+    "videoUrl": {
+      "type": "string"
+    }
+  }
+}
