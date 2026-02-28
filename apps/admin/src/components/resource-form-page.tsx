@@ -18,7 +18,7 @@ import { slugify } from "@/lib/slug";
 import { EntityMediaManager, generatePendingId } from "@/components/entity-media-manager";
 import { bulkUpdateEntityDocumentId } from "@/lib/entity-media-api";
 
-type FormField = {
+export type FormField = {
   name: string;
   label: string;
   type: "text" | "slug" | "textarea" | "richtext" | "author" | "categories" | "tags" | "media" | "custom";

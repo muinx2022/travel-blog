@@ -1,10 +1,10 @@
 "use client";
 
-import { ResourceFormPage } from "@/components/resource-form-page";
+import { ResourceFormPage, type FormField } from "@/components/resource-form-page";
 import { getHomestay, createHomestay, updateHomestay } from "@/lib/admin-api";
 
 export default function NewHomestayPage() {
-  const fields = [
+  const fields: FormField[] = [
     { name: "title", label: "Title", type: "text", required: true },
     { name: "slug", label: "Slug", type: "slug", required: true },
     { name: "author", label: "Author", type: "author", required: true },
