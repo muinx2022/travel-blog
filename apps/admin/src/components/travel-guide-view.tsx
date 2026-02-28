@@ -58,7 +58,7 @@ export function TravelGuideView({ documentId }: TravelGuideViewProps) {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Link href={`/travel-guides/${documentId}/edit"}>
+            <Link href={`/travel-guides/${documentId}/edit`}>
               <Button size="sm" variant="outline">
                 <ArrowLeft className="h-4 w-4" /> Edit
               </Button>
