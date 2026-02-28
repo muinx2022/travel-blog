@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Trash2, Filter, Video, FileImage, RefreshCw, ChevronLeft } from "lucide-react";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/components/auth-context";
 import {
   type EntityMediaItem,
   type MediaCategory,

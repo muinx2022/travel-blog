@@ -1,1 +1,2 @@
-export { default, dynamic } from "../souvenir-shops/page";
+export { default } from "../souvenir-shops/page";
+export const dynamic = "force-dynamic";
