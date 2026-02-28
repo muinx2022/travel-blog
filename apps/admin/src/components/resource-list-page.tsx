@@ -40,7 +40,7 @@ type Api<T extends ResourceItem> = {
 
 type Column<T extends ResourceItem> = {
   header: string;
-  accessor: keyof T | ((item: T) => React.ReactNode);
+  accessor: keyof T | string | ((item: T) => React.ReactNode);
   className?: string;
 };
 
