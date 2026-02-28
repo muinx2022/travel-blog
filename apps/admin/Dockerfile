@@ -34,4 +34,4 @@ WORKDIR /app/apps/admin
 
 EXPOSE 3001
 
-CMD ["sh", "-lc", "corepack enable && pnpm run start -- -H 0.0.0.0 -p 3001"]
+CMD ["sh", "-lc", "corepack enable && pnpm run start"]

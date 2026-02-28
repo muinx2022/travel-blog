@@ -34,4 +34,4 @@ WORKDIR /app/apps/web
 
 EXPOSE 3000
 
-CMD ["sh", "-lc", "corepack enable && pnpm run start -- -H 0.0.0.0 -p 3000"]
+CMD ["sh", "-lc", "corepack enable && pnpm run start"]
